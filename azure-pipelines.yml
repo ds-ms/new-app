@@ -15,7 +15,7 @@ variables:
   imageRepository: 'dsmsnewapp'
   containerRegistry: 'desattiracr.azurecr.io'
   dockerfilePath: '**/Dockerfile'
-  tag: '$(Build.BuildId)'
+  tag: '9'
   imagePullSecret: 'desattiracrfbd7-auth'
 
   # Agent VM image name
@@ -24,27 +24,9 @@ variables:
   k8sNamespaceForPR: 'review-app'
 
 stages:
-- stage: Build
-  displayName: Build stage
-  jobs:  
-  - job: Build
-    displayName: Build
-    pool: default
-    steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
-          
 - stage: Deploy
   displayName: Deploy stage
-  dependsOn: Build
-  condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/head/')))
+  condition: not(startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
   jobs:
   - deployment: Deploy
     displayName: Deploy
@@ -76,8 +58,7 @@ stages:
 # Deploy all PR changes
 - stage: DeployPR
   displayName: Deploy PR review app
-  dependsOn: Build
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/pull/'))
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/pull/')
   jobs:
   - deployment: Deploy
     displayName: Deploy job
