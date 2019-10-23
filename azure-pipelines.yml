@@ -21,7 +21,7 @@ variables:
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
   
-  k8sNamespaceForPR: 'review-app'
+  k8sNamespaceForPR: '$(system.pullRequest.sourceBranch)'
 
 stages:
 - stage: Build
